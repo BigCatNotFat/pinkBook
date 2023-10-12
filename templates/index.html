@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小粉书</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .column {
+            width: 50%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .item {
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .item img {
+            width: 100%;
+            height: auto; /* 将高度设置为auto以确保图片的比例不变 */
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sender {
+            color: #555;
+        }
+
+        .likes {
+            color: red;
+        }
+        a {
+            text-decoration: none; /* 移除下划线 */
+            color: inherit;        /* 使用父元素的文本颜色 */
+        }
+        .floating-circle {
+            width: 100px;
+            height: 100px;
+            background-color: #3498db;
+            border-radius: 50%;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2em;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        .floating-circle:hover {
+            background-color: #2980b9;
+        }
+    </style>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    let startTouchY = 0;
+    let isPulledDown = false;
+
+    document.addEventListener('touchstart', function(e) {
+        if (window.scrollY === 0) {
+            startTouchY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+        if (window.scrollY === 0 && !isPulledDown) {
+            let currentTouchY = e.touches[0].clientY;
+            let diff = currentTouchY - startTouchY;
+            if (diff > 30) { // Change this value to set pull-down length
+                isPulledDown = true;
+                location.reload();
+            }
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function() {
+        isPulledDown = false;
+    }, { passive: true });
+});
+</script>
+
+</head>
+<body>
+    <div class="column">
+        <!-- 第一部分的内容 -->
+{% for message in messages[-20:][::-1] %}
+            {% if message.id % 2 == 1 %}  <!-- 如果 ID 为奇数 -->
+                <a href="{{ url_for('view_item', item_id=message.id) }}">
+                    <div class="item">
+                        <img src="{{ url_for('uploaded_file', filename=message.small_images[0]) }}">
+                        <div class="title">{{ message.title }}</div>
+                        <div class="footer">
+                            <span class="sender">{{ message.username }}</span>
+                            <span class="likes">点赞数{{ message.likes }}</span>
+                        </div>
+                    </div>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="column">
+        <!-- 第二部分的内容 -->
+{% for message in messages[-20:][::-1] %}
+            {% if message.id % 2 == 0 %}  <!-- 如果 ID 为偶数 -->
+                <a href="{{ url_for('view_item', item_id=message.id) }}">
+                    <div class="item">
+                        <img src="{{ url_for('uploaded_file', filename=message.small_images[0]) }}">
+                        <div class="title">{{ message.title }}</div>
+                        <div class="footer">
+                            <span class="sender">{{ message.username }}</span>
+                            <span class="likes">点赞数{{ message.likes }}</span>
+                        </div>
+                    </div>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <a href="{{ url_for('add_item') }}">
+        <div class="floating-circle">
+            +
+        </div>
+    </a>
+</body>
+
+
+</html>

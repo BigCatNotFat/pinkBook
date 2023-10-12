@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模仿布局</title>
+    <style>
+        .carousel {
+            display: flex;
+            overflow-x: scroll;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .carousel img {
+            width: 100%;
+            height: 100%;  /* 或者设置为一个固定值，如 300px */
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        hr {
+            margin: 10px 0;
+        }
+
+        /* 新增的评论区样式 */
+        .comment {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-name {
+            font-weight: bold;
+        }
+
+        .comment-text {
+            margin-top: 5px;
+        }
+
+        .comment-time {
+            color: gray;
+            margin-top: 5px;
+        }
+        .floating-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f9f9f9;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 -1px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e5e5e5;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .send-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+    </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 当用户点击返回按钮时
+    window.addEventListener('popstate', function(event) {
+        // 重定向到您指定的页面
+        window.location.href = "http://www.baidu.com";
+    });
+});
+</script>
+
+</head>
+
+<body>
+    <div class="carousel">
+        {% for image in messages.origin_images %}
+        <img src="{{ url_for('uploaded_file', filename=image) }}" alt="Image">
+        {% endfor %}
+    </div>
+    <h1>{{messages.title}}</h1>
+    <p>{{messages.text}}</p>
+    <p>发布于 {{messages.timestamp}}</p>
+    <hr>
+    <div class="comments">
+        {% for comment in messages.comments %}
+        <div class="comment">
+            <div class="comment-content">
+                <div class="comment-name">{{comment.name}}</div>
+                <div class="comment-text">{{comment.text}}</div>
+                <div class="comment-time">{{comment.time}}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+<br>
+    <br><br>
+<form action="" method="post">
+    <div class="floating-input-container">
+        <input type="text" class="floating-input" name="comment" placeholder="输入评论...">
+        <button class="send-button" type="submit">发送</button>
+    </div>
+</form>
+
+</body>
+</html>

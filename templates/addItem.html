@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发帖页面</title>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.post-form {
+    max-width: 600px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h1 {
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+input[type="text"], textarea, input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, textarea:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.preview-container {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    margin-right: 10px;
+    margin-top: 10px;
+    vertical-align: top;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.close-icon {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 0, 0, 0.7);
+    cursor: pointer;
+    text-align: center;
+    line-height: 20px;
+    font-weight: bold;
+    border-radius: 50%;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+.close-icon:hover {
+    transform: scale(1.1);
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+    </style>
+</head>
+<body>
+    <div class="post-form">
+        <h1>发帖</h1>
+        <form action="/submit_post" method="POST" enctype="multipart/form-data" id="upload-form">
+            <div class="form-group">
+                <label for="title">标题</label>
+                <input type="text" id="title" name="title" placeholder="输入标题">
+            </div>
+            <div class="form-group">
+                <label for="text">文本</label>
+                <textarea id="text" name="text" rows="6" placeholder="输入文本内容"></textarea>
+            </div>
+<div class="form-group">
+    <label for="images">图片</label>
+    <input type="file" id="images" name="images" accept="image/*" multiple>
+    <div id="preview" style="display: flex; flex-wrap: wrap;"></div> <!-- 使用flexbox以更好地管理预览图像 -->
+</div>
+<div class="form-group">
+    <button type="submit" id="submit-button">发布</button>
+</div>
+        </form>
+    </div>
+
+    <script>
+        const imagesInput = document.getElementById('images');
+        const previewDiv = document.getElementById('preview');
+
+// 在外面创建一个变量来存储所有的文件
+let allFiles = [];
+
+imagesInput.addEventListener('change', function(event) {
+    // 获取新选择的文件并将它们添加到allFiles数组中
+    const newFiles = Array.from(event.target.files);
+    allFiles = [...allFiles, ...newFiles];
+
+    newFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+    const originalImage = new Image();
+    originalImage.src = e.target.result;
+
+    originalImage.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = originalImage.width;
+        let height = originalImage.height;
+
+        if (width > height) {
+            if (width > 800) {
+                height *= 800 / width;
+                width = 800;
+            }
+        } else {
+            if (height > 800) {
+                width *= 800 / height;
+                height = 800;
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(originalImage, 0, 0, width, height);
+
+        canvas.toBlob(function(resizedBlob) {
+            const resizedFile = new File([resizedBlob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+
+            // Replace the original file in the allFiles array
+            const fileIndex = allFiles.indexOf(file);
+            if (fileIndex !== -1) {
+                allFiles[fileIndex] = resizedFile;
+            } else {
+                allFiles.push(resizedFile);
+            }
+
+            updateFileInput();
+
+            // Preview logic continues as before
+            const imagePreviewContainer = document.createElement('div');
+            imagePreviewContainer.className = 'preview-container';
+
+            const image = document.createElement('img');
+            image.className = 'preview-image';
+            image.src = URL.createObjectURL(resizedBlob);
+
+            const closeIcon = document.createElement('span');
+            closeIcon.className = 'close-icon';
+            closeIcon.innerHTML = '×';
+            closeIcon.addEventListener('click', function() {
+                previewDiv.removeChild(imagePreviewContainer);
+                removeFromFilesList(resizedFile);
+            });
+
+            imagePreviewContainer.appendChild(image);
+            imagePreviewContainer.appendChild(closeIcon);
+            previewDiv.appendChild(imagePreviewContainer);
+        }, 'image/jpeg', 0.9); // 0.9 is the quality
+
+};
+
+        };
+        reader.readAsDataURL(file);
+    });
+
+    updateFileInput();
+});
+
+function removeFromFilesList(fileToRemove) {
+    allFiles = allFiles.filter(file => file !== fileToRemove);
+    updateFileInput();
+}
+
+function updateFileInput() {
+    const newFilesDataTransfer = new DataTransfer();
+    allFiles.forEach(file => newFilesDataTransfer.items.add(file));
+    imagesInput.files = newFilesDataTransfer.files;
+}
+
+
+        const submitButton = document.getElementById('submit-button');
+        const uploadForm = document.getElementById('upload-form');
+
+        function disableSubmitButton() {
+            submitButton.disabled = true;
+            submitButton.textContent = '正在上传，请不要离开';
+        }
+
+        function enableSubmitButton() {
+            submitButton.disabled = false;
+            submitButton.textContent = '发布'; // Set the original button text back when enabled
+        }
+
+        uploadForm.addEventListener('submit', function () {
+            disableSubmitButton();
+        });
+    </script>
+</body>
+</html>

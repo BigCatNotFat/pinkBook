@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模仿布局</title>
+    <style>
+        .carousel {
+            display: flex;
+            overflow: hidden;
+            width: 300px;
+            height: 200px;
+        }
+        .carousel img {
+            width: 300px;
+            height: 200px;
+            transition: transform 0.5s;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        p {
+            margin: 10px 0;
+        }
+        hr {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel">
+        <img src="path_to_image1.jpg" alt="Image 1">
+        <img src="path_to_image2.jpg" alt="Image 2">
+        <!-- 添加更多图片... -->
+    </div>
+    <h1>这是标题</h1>
+    <p>这是正文内容。</p>
+    <p>发布于 17:54</p>
+    <hr>
+    <div class="comments">
+        <p>评论1内容...</p>
+        <p>评论2内容...</p>
+        <!-- 添加更多评论... -->
+    </div>
+
+    <script>
+        // 这部分是为了使图片能够左右滑动
+        let index = 0;
+        const images = document.querySelectorAll('.carousel img');
+        document.querySelector('.carousel').addEventListener('click', function() {
+            index = (index + 1) % images.length;
+            const offset = -index * 300; // 300是图片的宽度
+            for (let img of images) {
+                img.style.transform = `translateX(${offset}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
